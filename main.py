@@ -34,7 +34,7 @@ def get_time(style):
 
 ##### Aufgabe 1: Videoaufnahme
 # TODO: Video
-#  start saving on click (attempt started)
+#  Aufnahme durch Klick des Users starten (Anlage freigegeben oder Athlet beginnt Versuch)
 def capture_video():
     global w, h
     cap = cv2.VideoCapture(0)
@@ -110,9 +110,6 @@ def trigger_serial():
             print(ex)
             break
 
-
-# TODO: processing
-#  trigger frame == number 1000
 
 def extract_frames():
     fileDir = os.getcwd()
