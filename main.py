@@ -32,7 +32,7 @@ def get_time(style):
     return t
 
 
-##### task 1: Video capture
+##### Aufgabe 1: Videoaufnahme
 # TODO: Video
 #  start saving on click (attempt started)
 def capture_video():
@@ -43,18 +43,18 @@ def capture_video():
     new_vid_file()
     capture = True
     if not cap.isOpened():
-        print("Cannot open camera")
+        print("Kamera kann nicht geöffnet werden!")
         exit()
     while capture:
         if len(vidList) > 3:
             vidList.pop(0)
         ret, frame = cap.read()
         if not ret:
-            print("Can't receive frame (stream end?)")
+            print("Frame kann nicht empfangen werden (Stream beendet?)")
             break
-        # operations on frame
+        # Frame bearbeiten
         # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # display the frame
+        # Frame anzeigen
         # cv2.imshow('frame', frame)
         # if cv2.waitKey(1) == ord('q'):
         #     break
@@ -68,12 +68,11 @@ def capture_video():
             out.release()
             new_vid_file()
             startTime = currentTime
-    # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
 
 
-##### task 2: listen to serial, check measurement // threshold, set trigger
+##### Aufgabe 2: Serielle Schnittstelle überwachen, Messung überprüfen // Schwellwert, Trigger
 def trigger_serial():
     global triggeredTime
 
