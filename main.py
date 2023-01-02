@@ -38,13 +38,13 @@ def get_time(style):
 def capture_video():
     global w, h
     cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Kamera kann nicht geöffnet werden!")
+        exit()
     w, h = int(cap.get(3)), int(cap.get(4))
     startTime = get_time(1)
     new_vid_file()
     capture = True
-    if not cap.isOpened():
-        print("Kamera kann nicht geöffnet werden!")
-        exit()
     while capture:
         if len(vidList) > 3:
             vidList.pop(0)
