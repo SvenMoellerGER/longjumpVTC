@@ -26,7 +26,7 @@ def get_time(style):
     if style == 0:  # Tag mit Zeit
         t = t.strftime('%Y%m%d-%H%M%S_%f')[:-3]
     elif style == 1:    # Zeit
-        t = t.strftime('%S.%f')[:-3]
+        t = t.strftime('%S.%f')[:-3]        # TODO anderes time modul verwendet (tick tock)
     else:
         raise ValueError('0 oder 1 erforderlich!')
     return t
@@ -102,7 +102,7 @@ def trigger_serial():
                 print(decoded_bytes)
                 if trigger:
                     print('Trigger successful')
-                    extract_frames()
+                    extract_frames()            # TODO warten bis nächstes Video fertig ist
                     break
             print(decoded_bytes)
         except serial.SerialException:
