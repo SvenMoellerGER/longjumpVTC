@@ -1,6 +1,9 @@
 import datetime
 import os
 import sys
+import time
+import multitimer
+
 import serial
 import cv2
 import threading
@@ -42,9 +45,9 @@ def capture_video():
         print("Kamera kann nicht geöffnet werden!")
         exit()
     w, h = int(cap.get(3)), int(cap.get(4))
-    startTime = get_time(1)
     new_vid_file()
     capture = True
+    timer.start()
     while capture:
         if len(vidList) > 3:
             vidList.pop(0)
@@ -59,17 +62,17 @@ def capture_video():
         # if cv2.waitKey(1) == ord('q'):
         #     break
         out.write(frame)
-        currentTime = get_time(1)
-        breakDecision = float(currentTime) - float(startTime)
-        print('currentTime: ' + str(currentTime))       # for debugging
-        print('startTime: ' + str(startTime))       # for debugging
-        print('breakDecision: ' + str(breakDecision))       # for debugging
-        if breakDecision > 5.0:
-            out.release()
-            new_vid_file()
-            startTime = currentTime
     cap.release()
     cv2.destroyAllWindows()
+
+
+def new_interval_video():
+    out.release()
+    new_vid_file()
+
+
+secs = 3
+timer = multitimer.MultiTimer(interval=secs, function=new_interval_video)
 
 
 ##### Aufgabe 2: Serielle Schnittstelle überwachen, Messung überprüfen // Schwellwert, Trigger
@@ -103,7 +106,8 @@ def trigger_serial():
                 if trigger:
                     print('Trigger successful')
                     extract_frames()            # TODO warten bis nächstes Video fertig ist
-                    break
+                    time.sleep(secs+1)
+                    # break
             print(decoded_bytes)
         except serial.SerialException:
             ex = sys.exc_info()
