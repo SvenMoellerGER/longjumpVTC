@@ -105,8 +105,8 @@ def trigger_serial():
                 print(decoded_bytes)
                 if trigger:
                     print('Trigger successful')
-                    extract_frames()            # TODO warten bis nächstes Video fertig ist
-                    time.sleep(secs+1)
+                    time.sleep(secs + 1)
+                    extract_frames()
                     # break
             print(decoded_bytes)
         except serial.SerialException:
