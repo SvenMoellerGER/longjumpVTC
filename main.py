@@ -3,7 +3,6 @@ import os
 import sys
 import time
 import multitimer
-
 import serial
 import cv2
 import threading
@@ -101,8 +100,6 @@ def trigger_serial():
                     triggeredTime = get_time(0)
                 else:
                     trigger = False
-                # decoded_bytes = str(decoded_bytes)
-                # print(decoded_bytes)
                 if trigger:
                     print('Trigger successful')
                     time.sleep(secs + 0.3)
