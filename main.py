@@ -1,6 +1,8 @@
 import datetime
 import os
 import sys
+import time
+import multitimer
 import serial
 import cv2
 import threading
@@ -36,15 +38,15 @@ def get_time(style):
 # TODO: Video
 #  Aufnahme durch Klick des Users starten (Anlage freigegeben oder Athlet beginnt Versuch)
 def capture_video():
-    global w, h
+    global w, h, cap
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Kamera kann nicht geöffnet werden!")
         exit()
     w, h = int(cap.get(3)), int(cap.get(4))
-    startTime = get_time(1)
     new_vid_file()
     capture = True
+    timer.start()
     while capture:
         if len(vidList) > 3:
             vidList.pop(0)
@@ -59,17 +61,17 @@ def capture_video():
         # if cv2.waitKey(1) == ord('q'):
         #     break
         out.write(frame)
-        currentTime = get_time(1)
-        breakDecision = float(currentTime) - float(startTime)
-        print('currentTime: ' + str(currentTime))       # for debugging
-        print('startTime: ' + str(startTime))       # for debugging
-        print('breakDecision: ' + str(breakDecision))       # for debugging
-        if breakDecision > 5.0:
-            out.release()
-            new_vid_file()
-            startTime = currentTime
     cap.release()
     cv2.destroyAllWindows()
+
+
+def new_interval_video():
+    out.release()
+    new_vid_file()
+
+
+secs = 2
+timer = multitimer.MultiTimer(interval=secs, function=new_interval_video)
 
 
 ##### Aufgabe 2: Serielle Schnittstelle überwachen, Messung überprüfen // Schwellwert, Trigger
@@ -98,13 +100,16 @@ def trigger_serial():
                     triggeredTime = get_time(0)
                 else:
                     trigger = False
-                decoded_bytes = str(decoded_bytes)
-                print(decoded_bytes)
                 if trigger:
                     print('Trigger successful')
-                    extract_frames()            # TODO warten bis nächstes Video fertig ist
+                    time.sleep(secs + 0.3)
+                    out.release()
+                    cap.release()
+                    cv2.destroyAllWindows()
+                    extract_frames()
                     break
-            print(decoded_bytes)
+            if isinstance(decoded_bytes, str):
+                print(decoded_bytes)
         except serial.SerialException:
             ex = sys.exc_info()
             print(ex)
@@ -115,14 +120,15 @@ def extract_frames():
     fileDir = os.getcwd()
     path = os.path.join(fileDir, 'processing', 'triggered', triggeredTime)
     os.mkdir(path)
-    count = 1000
+    count = 1
     for i in range(len(vidList)):
         vid = cv2.VideoCapture('processing/videos/'+vidList[i])
         success, image = vid.read()
+        print(vidList[i])
         while success:
             line_thicknes = 1
             cv2.line(image, (w//2, 0), (w//2, h), (0, 0, 255), line_thicknes)
-            cv2.imwrite(os.path.join(path, triggeredTime + '_frame%d.jpg' % count), image)
+            cv2.imwrite(os.path.join(path, triggeredTime + '_frame%04d.jpg' % count), image)
             success, image = vid.read()
             count += 1
         i += 1
