@@ -28,7 +28,7 @@ def get_time(style):
     if style == 0:  # Tag mit Zeit
         t = t.strftime('%Y%m%d-%H%M%S_%f')[:-3]
     elif style == 1:    # Zeit
-        t = t.strftime('%S.%f')[:-3]        # TODO anderes time modul verwendet (tick tock)
+        t = t.strftime('%S.%f')[:-3]
     else:
         raise ValueError('0 oder 1 erforderlich!')
     return t
@@ -56,10 +56,6 @@ def capture_video():
             break
         # Frame bearbeiten
         # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # Frame anzeigen
-        # cv2.imshow('frame', frame)
-        # if cv2.waitKey(1) == ord('q'):
-        #     break
         out.write(frame)
     cap.release()
     cv2.destroyAllWindows()
@@ -98,13 +94,15 @@ def trigger_serial():
                 if decoded_bytes < 1300:  # 1.30 Meter (ungefähr Breite des Absprungbrettes)
                     trigger = True
                     triggeredTime = get_time(0)
+                    print('getSecondCam ausgeführt')
+                    getSecondCam()
                 else:
                     trigger = False
                 if trigger:
                     print('Trigger successful')
                     time.sleep(secs + 0.3)
-                    out.release()
-                    cap.release()
+                    # out.release()
+                    # cap.release()
                     cv2.destroyAllWindows()
                     extract_frames()
                     break
@@ -119,7 +117,10 @@ def trigger_serial():
 def extract_frames():
     fileDir = os.getcwd()
     path = os.path.join(fileDir, 'processing', 'triggered', triggeredTime)
-    os.mkdir(path)
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        pass
     count = 1
     for i in range(len(vidList)):
         vid = cv2.VideoCapture('processing/videos/'+vidList[i])
@@ -132,6 +133,38 @@ def extract_frames():
             success, image = vid.read()
             count += 1
         i += 1
+    print('\nALLES ERLEDIGT')
+
+
+def setupSecondCam():
+    try:
+        global frame_ipcam
+
+        user = 'tapoc100'
+        password = user
+        ipaddress = '192.168.178.37'
+        rtspPort = '554'
+        resolution = '/stream1'
+
+        cap_ipcam = cv2.VideoCapture('rtsp://' + user + ':' + password + '@' + ipaddress + ':' + rtspPort + resolution)
+        breite, hoehe = int(cap_ipcam.get(3)), int(cap_ipcam.get(4))
+        print('cap_ipcam gestartet')
+
+        while True:
+            funzt, frame_ipcam = cap_ipcam.read()
+            frame_ipcam = cv2.resize(frame_ipcam, (breite, hoehe))
+
+    except:
+        print('Bilder der zweiten Kamera konnte nicht empfangen werden!')
+        print(sys.exc_info())
+
+
+def getSecondCam():
+    fileDir = os.getcwd()
+    path = os.path.join(fileDir, 'processing', 'triggered', triggeredTime)
+    os.mkdir(path)
+    path_secondCam = os.path.join(path, triggeredTime + '_secondCamTriggered.jpg')
+    cv2.imwrite(path_secondCam, frame_ipcam)
 
 
 thread_captureVid = threading.Thread(target=capture_video, args=())
@@ -139,3 +172,6 @@ thread_captureVid.start()
 
 thread_listenSerial = threading.Thread(target=trigger_serial, args=())
 thread_listenSerial.start()
+
+thread_setupSecondCam = threading.Thread(target=setupSecondCam, args=())
+thread_setupSecondCam.start()
